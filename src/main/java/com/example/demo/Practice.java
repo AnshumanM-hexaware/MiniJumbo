@@ -5,86 +5,93 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Practice {
 
 	public static void main(String[] args) {
-		System.out.println(getSchema());
-		getTables("sakila");
+
 	}
 	
+	// Common JDBC and Mysql connection method
+	private static  Connection DBConnection(String schema) {
+	    Connection con = null;
+		try{
+	    	Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection ("jdbc:mysql://172.25.227.164:3306/"+schema, "root", "Password123");
+	    }catch (ClassNotFoundException e) {
+	        System.out.println(e.getMessage());
+	    } catch (SQLException e) {
+	        System.out.println(e.getMessage());
+	    }
+
+	    return con;
+	}
 	
-	public static List<String> getSchema() {
+	// Method to get the schema names.
+	public static List<String> getSchema() throws ClassNotFoundException, SQLException {	
+		Connection con = null;
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		con = DriverManager.getConnection ("jdbc:mysql://172.25.227.164:3306", "root", "Password123");
+		Statement st = null;
+		ResultSet rs = null;
+		String query = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA";
 		List<String> schema = null;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		// change user and password as you need it
-		Connection con = null;
-		try {
-			con = DriverManager.getConnection ("jdbc:mysql://127.0.0.1:3306", "root", "Password123");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		schema = new ArrayList<String>();
-		ResultSet rs = null;
-		try {
-			rs = con.getMetaData().getCatalogs();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
+			schema = new ArrayList<>();
+			st = con.createStatement();
+			rs = st.executeQuery(query);
 			while (rs.next()) {
-				schema.add(rs.getString("TABLE_CAT"));
-//			   schema = "TABLE_SCHEMA = " + rs.getString("TABLE_CAT");
+				schema.add(rs.getString(1));
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return schema;
 	}
+		
+	// Method to get the table names.
+	public static List<String> getTables(String schema) {
+		Connection con = DBConnection(schema);
+	    Statement st = null;
+	    ResultSet rs = null;
+	    String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = '" + schema + "'";
+	    List<String> tables = null;
+	    try {
+	    	tables = new ArrayList<>();
+	        st = con.createStatement();
+	        rs = st.executeQuery(query);
+	        while (rs.next()) {
+	        	tables.add(rs.getString(1));
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+
+	    }
+	    return tables;
+	}
 	
-	public static List<String> getTables(String selschema) {
-		List<String> tableList = null;
-		try {
-			String connection = null;
-			connection = "jdbc:mysql://127.0.0.1:3306/" + selschema;
-			Connection con = null;
-			try {
-				Class.forName("com.mysql.jdbc.Driver");
-				con = DriverManager.getConnection(connection, "root", "Password123");
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// ResultSet rs= null;
-			//
-			// rs = con.getMetaData().getCatalogs();
-			DatabaseMetaData md = con.getMetaData();
-			ResultSet tabl = md.getTables(null, null, "%", null);
-			tableList = new ArrayList<String>();
-			while (tabl.next()) {
-				tableList.add(tabl.getString(3));
-			}
-			// System.out.println(tableList);
+	
+	// Method to get the column names. sujay
+	public static List<String> getColumns(String schema, String table_name) {
+		Connection con = DBConnection(schema);
+	    Statement st = null;
+	    ResultSet rs = null;
+	    String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = '" + table_name + "'";
+	    List<String> columns = null;
+	    try {
+	    	columns = new ArrayList<>();
+	        st = con.createStatement();
+	        rs = st.executeQuery(query);
+	        while (rs.next()) {
+	        	columns.add(rs.getString(1));
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return tableList;
-
+	    }
+	    return columns;
 	}
 }
