@@ -74,7 +74,7 @@ public class Practice {
 	}
 	
 	
-	// Method to get the column names.
+	// Method to get the column names. sujay
 	public static List<String> getColumns(String schema, String table_name) {
 		Connection con = DBConnection(schema);
 	    Statement st = null;
