@@ -10,10 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Practice {
-
-	public static void main(String[] args) {
-
-	}
 	
 	// Common JDBC and Mysql connection method
 	private static  Connection DBConnection(String schema) {
